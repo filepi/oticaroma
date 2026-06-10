@@ -212,6 +212,7 @@ a {
   min-height: 85vh;
   display: flex;
   align-items: center;
+  justify-content: center;
   background: var(--color-brand);
   overflow: hidden;
 }
@@ -226,6 +227,7 @@ a {
   max-width: 650px;
   padding: 4rem 0;
   color: var(--color-text);
+  text-align: center;
 }
 
 .hero-badge {
@@ -250,6 +252,7 @@ a {
   max-width: min(360px, 85vw);
   height: auto;
   filter: none;
+  margin: 0 auto;
 }
 
 .hero p {
@@ -263,6 +266,7 @@ a {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
+  justify-content: center;
 }
 
 .hero-actions .btn-outline {
