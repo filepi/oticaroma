@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import logo from '../assets/logo.png';
+import logo from '../assets/image.png';
 
 const navItems = [
   { label: 'Início', href: '#inicio' },
