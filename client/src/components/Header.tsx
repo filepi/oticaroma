@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import logo from '../assets/logo.png';
 
 const navItems = [
   { label: 'Início', href: '#inicio' },
@@ -21,11 +22,7 @@ export default function Header() {
     <header className="header">
       <div className="container header-inner">
         <Link to="/" className="logo">
-          <span className="logo-icon">👓</span>
-          <div>
-            <span className="logo-name">Ótica Roma</span>
-            <span className="logo-tagline">Visão com estilo</span>
-          </div>
+          <img src={logo} alt="Ótica Roma" className="logo-img" />
         </Link>
 
         <nav className="nav">

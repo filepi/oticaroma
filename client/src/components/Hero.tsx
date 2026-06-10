@@ -1,10 +1,13 @@
+import logo from '../assets/logo.png';
+
 export default function Hero() {
   return (
     <section id="inicio" className="hero">
       <div className="hero-overlay" />
       <div className="container hero-content">
-        <span className="hero-badge">Sua visão, nossa paixão</span>
-        <h1>Ótica Roma</h1>
+        <h1 className="hero-logo-heading">
+          <img src={logo} alt="Ótica Roma" className="hero-logo" />
+        </h1>
         <p>
           Encontre os melhores óculos com qualidade, estilo e preços especiais.
           Faça parte do nosso Clube de Benefícios e aproveite vantagens exclusivas.
