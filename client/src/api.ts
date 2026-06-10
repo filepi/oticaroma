@@ -1,19 +1,21 @@
 import type { Oculos } from './types';
 
+const API_BASE = import.meta.env.VITE_API_URL ?? '';
+
 export async function fetchOculos(): Promise<Oculos[]> {
-  const res = await fetch('/api/oculos');
+  const res = await fetch(`${API_BASE}/api/oculos`);
   if (!res.ok) throw new Error('Erro ao carregar ofertas');
   return res.json();
 }
 
 export async function fetchOculosById(id: string): Promise<Oculos> {
-  const res = await fetch(`/api/oculos/${id}`);
+  const res = await fetch(`${API_BASE}/api/oculos/${id}`);
   if (!res.ok) throw new Error('Óculos não encontrado');
   return res.json();
 }
 
 export async function cadastrarClube(formData: FormData): Promise<{ message: string }> {
-  const res = await fetch('/api/clube', {
+  const res = await fetch(`${API_BASE}/api/clube`, {
     method: 'POST',
     body: formData,
   });
