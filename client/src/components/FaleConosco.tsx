@@ -1,6 +1,6 @@
 import { QRCodeSVG } from 'qrcode.react';
 
-const WHATSAPP_NUMBER = '5581995031323';
+const WHATSAPP_NUMBER = '5581981131116';
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Olá! Gostaria de mais informações sobre a Ótica Roma.')}`;
 
 export default function FaleConosco() {
