@@ -4,7 +4,8 @@ import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
-import db from './db.js';
+import { oculos } from './data/oculos.js';
+import { addMembro } from './data/membros.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -72,41 +73,35 @@ app.post('/api/clube', upload.single('cupom_fiscal'), (req, res) => {
 
     const cpfLimpo = cpf.replace(/\D/g, '');
 
-    const stmt = db.prepare(`
-      INSERT INTO membros_clube (nome_completo, cpf, data_nascimento, cupom_fiscal)
-      VALUES (?, ?, ?, ?)
-    `);
-
-    const result = stmt.run(
-      nome_completo.trim(),
-      cpfLimpo,
+    const membro = addMembro({
+      nome_completo: nome_completo.trim(),
+      cpf: cpfLimpo,
       data_nascimento,
-      req.file.filename
-    );
+      cupom_fiscal: req.file.filename,
+    });
 
     res.status(201).json({
       message: 'Cadastro realizado com sucesso! Bem-vindo ao Clube de Benefícios.',
-      id: result.lastInsertRowid,
+      id: membro.id,
     });
   } catch (err) {
-    if (err.message?.includes('UNIQUE constraint failed')) {
-      return res.status(409).json({ error: 'CPF já cadastrado no clube.' });
+    if (err.code === 'DUPLICATE_CPF') {
+      return res.status(409).json({ error: err.message });
     }
     res.status(500).json({ error: 'Erro ao processar cadastro.' });
   }
 });
 
 app.get('/api/oculos', (_req, res) => {
-  const oculos = db.prepare('SELECT * FROM oculos ORDER BY id').all();
   res.json(oculos);
 });
 
 app.get('/api/oculos/:id', (req, res) => {
-  const oculos = db.prepare('SELECT * FROM oculos WHERE id = ?').get(req.params.id);
-  if (!oculos) {
+  const item = oculos.find((o) => o.id === Number(req.params.id));
+  if (!item) {
     return res.status(404).json({ error: 'Óculos não encontrado.' });
   }
-  res.json(oculos);
+  res.json(item);
 });
 
 app.use((err, _req, res, _next) => {
@@ -118,4 +113,11 @@ app.use((err, _req, res, _next) => {
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);
+}).on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`Porta ${PORT} já está em uso. Encerre o processo antigo com: lsof -ti:${PORT} | xargs kill -9`);
+  } else {
+    console.error('Erro ao iniciar servidor:', err.message);
+  }
+  process.exit(1);
 });

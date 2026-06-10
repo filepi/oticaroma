@@ -1,11 +1,11 @@
 # Ótica Roma
 
-Site institucional da **Ótica Roma** com React, Express e SQLite.
+Site institucional da **Ótica Roma** com React e Express.
 
 ## Funcionalidades
 
 - **Nossas Ofertas** — Carrossel dinâmico de óculos com página de detalhes
-- **Clube de Benefícios** — Cadastro com nome, CPF, data de nascimento e upload de cupom fiscal (salvo no banco)
+- **Clube de Benefícios** — Cadastro com nome, CPF, data de nascimento e upload de cupom fiscal
 - **Fale Conosco** — QR Code e link direto para WhatsApp (+55 81 98113-1116)
 
 ## Pré-requisitos
@@ -32,9 +32,9 @@ npm run dev
 ```
 oticaroma/
 ├── client/          # React (Vite + TypeScript)
-├── server/          # Express + SQLite
-│   ├── uploads/     # Cupons fiscais enviados
-│   └── oticaroma.db # Banco de dados (criado automaticamente)
+├── server/          # Express API
+│   ├── data/        # Catálogo de óculos e cadastros do clube (JSON)
+│   └── uploads/     # Cupons fiscais enviados
 └── package.json
 ```
 
