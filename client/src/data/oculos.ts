@@ -1,46 +1,47 @@
 import type { Oculos } from '../types';
+import polidoPreto from '../assets/polido_preto.png';
+import polidoTartaruga from '../assets/polido_tartaruga.png';
+import outdoorsman from '../assets/outdoorsman.png';
 
 export const oculos: Oculos[] = [
   {
     id: 1,
-    nome: 'Classic Aviator',
+    nome: 'Wayfarer Classic Tartaruga',
     marca: 'Ray-Ban',
-    preco: 459.9,
-    preco_original: 599.9,
+    preco: 990.0,
+    preco_original: 1100.0,
     descricao: 'Estilo clássico atemporal',
     descricao_detalhada:
-      'Óculos aviador com lentes polarizadas e armação em metal dourado. Proteção UV400 completa. Ideal para uso diário e dirigir.',
-    imagem: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600&h=400&fit=crop',
-    cor: 'Dourado',
-    material: 'Metal',
-    tipo: 'Solar',
-  },
-  {
-    id: 2,
-    nome: 'Urban Square',
-    marca: 'Oakley',
-    preco: 389.0,
-    preco_original: null,
-    descricao: 'Design moderno e urbano',
-    descricao_detalhada:
-      'Armação quadrada em acetato premium. Leve, confortável e com estilo contemporâneo. Perfeito para o dia a dia no escritório.',
-    imagem: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600&h=400&fit=crop',
-    cor: 'Preto',
+      'Ícone atemporal com armação em acetato tartaruga polido e lentes G-15. Proteção UV400 completa. Perfeito para o dia a dia.',
+    imagem: polidoTartaruga,
+    cor: 'Tartaruga',
     material: 'Acetato',
     tipo: 'Solar',
   },
   {
-    id: 3,
-    nome: 'Sport Pro',
-    marca: 'Nike Vision',
-    preco: 529.0,
-    preco_original: 649.0,
-    descricao: 'Performance esportiva',
-    descricao_detalhada:
-      'Desenvolvido para atletas. Armação flexível, anti-impacto e com grip nas hastes. Lentes fotocromáticas inclusas.',
-    imagem: 'https://images.unsplash.com/photo-1577803645773-f96470509666?w=600&h=400&fit=crop',
-    cor: 'Azul',
-    material: 'TR90',
+    id: 2,
+    nome: 'Wayfarer Classic Preto',
+    marca: 'Ray-Ban',
+    preco: 990.0,
+    preco_original: 1100.0,
+    descricao: 'Estilo clássico atemporal',
+    descricao_detalhada: 'Óculos aviador com lentes polarizadas e armação em metal dourado. Proteção UV400 completa. Ideal para uso diário e dirigir.',
+    imagem: polidoPreto,
+    cor: 'Preto',
+    material: 'Metal',
     tipo: 'Solar',
   },
+  {
+    id: 3,
+    nome: 'The Outdoorsman',
+    marca: 'Dolce & Gabbana',
+    preco: 3090.0,
+    preco_original: 3200,
+    descricao: 'Polido Dourado Artista',
+    descricao_detalhada: 'Ouro branco transparente espelhado',
+    imagem: outdoorsman,
+    cor: 'Dourado',
+    material: 'Metal',
+    tipo: 'Solar',
+  }
 ];
