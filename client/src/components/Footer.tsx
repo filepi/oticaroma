@@ -7,6 +7,7 @@ export default function Footer() {
           <p>Cuidando da sua visão com qualidade e carinho desde sempre.</p>
         </div>
         <div className="footer-info">
+          <p>Rua da Hora, 456 - Espinheiro, Recife - PE, 52020-010</p>
           <p>WhatsApp: (81) 98113-1116</p>
           <p>&copy; {new Date().getFullYear()} Ótica Roma. Todos os direitos reservados.</p>
         </div>
