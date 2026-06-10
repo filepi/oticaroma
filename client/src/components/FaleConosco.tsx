@@ -32,7 +32,7 @@ export default function FaleConosco() {
               <span className="contato-icon">📱</span>
               <div>
                 <h3>WhatsApp</h3>
-                <p>(81) 99503-1323</p>
+                <p>(81) 98113-1116</p>
               </div>
             </div>
 

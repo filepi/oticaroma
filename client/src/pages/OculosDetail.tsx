@@ -38,7 +38,7 @@ export default function OculosDetail() {
     );
   }
 
-  const whatsappUrl = `https://wa.me/5581995031323?text=${encodeURIComponent(
+  const whatsappUrl = `https://wa.me/5581981131116?text=${encodeURIComponent(
     `Olá! Tenho interesse no óculos ${oculos.nome} (${oculos.marca}) - ${formatarPreco(oculos.preco)}`
   )}`;
 

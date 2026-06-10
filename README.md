@@ -6,7 +6,7 @@ Site institucional da **Ótica Roma** com React, Express e SQLite.
 
 - **Nossas Ofertas** — Carrossel dinâmico de óculos com página de detalhes
 - **Clube de Benefícios** — Cadastro com nome, CPF, data de nascimento e upload de cupom fiscal (salvo no banco)
-- **Fale Conosco** — QR Code e link direto para WhatsApp (+55 81 99503-1323)
+- **Fale Conosco** — QR Code e link direto para WhatsApp (+55 81 98113-1116)
 
 ## Pré-requisitos
 
