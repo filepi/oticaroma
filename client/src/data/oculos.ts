@@ -1,4 +1,6 @@
-export const oculos = [
+import type { Oculos } from '../types';
+
+export const oculos: Oculos[] = [
   {
     id: 1,
     nome: 'Classic Aviator',

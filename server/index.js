@@ -4,7 +4,6 @@ import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
-import { oculos } from './data/oculos.js';
 import { addMembro } from './data/membros.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -90,18 +89,6 @@ app.post('/api/clube', upload.single('cupom_fiscal'), (req, res) => {
     }
     res.status(500).json({ error: 'Erro ao processar cadastro.' });
   }
-});
-
-app.get('/api/oculos', (_req, res) => {
-  res.json(oculos);
-});
-
-app.get('/api/oculos/:id', (req, res) => {
-  const item = oculos.find((o) => o.id === Number(req.params.id));
-  if (!item) {
-    return res.status(404).json({ error: 'Óculos não encontrado.' });
-  }
-  res.json(item);
 });
 
 app.use((err, _req, res, _next) => {

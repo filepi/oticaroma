@@ -32,16 +32,16 @@ npm run dev
 ```
 oticaroma/
 ├── client/          # React (Vite + TypeScript)
-├── server/          # Express API
-│   ├── data/        # Catálogo de óculos e cadastros do clube (JSON)
+│   └── src/data/    # Catálogo de óculos (estático)
+├── server/          # Express API (Clube de Benefícios)
 │   └── uploads/     # Cupons fiscais enviados
 └── package.json
 ```
 
 ## API
 
+O catálogo de óculos fica no frontend (`client/src/data/oculos.ts`) para funcionar no Netlify sem backend.
+
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| GET | `/api/oculos` | Lista todos os óculos |
-| GET | `/api/oculos/:id` | Detalhes de um óculos |
-| POST | `/api/clube` | Cadastro no clube (multipart/form-data) |
+| POST | `/api/clube` | Cadastro no clube (multipart/form-data) — requer backend em execução |
