@@ -1,5 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { adminCriarUsuario, adminExcluirUsuario, adminListarUsuarios } from '../../api';
+import {
+  adminAtualizarUsuario,
+  adminCriarUsuario,
+  adminExcluirUsuario,
+  adminListarUsuarios,
+} from '../../api';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useAuth } from '../../context/AuthContext';
 import type { AdminNivel, AdminUsuario } from '../../types';
@@ -14,12 +19,15 @@ export default function AdminUsuarios() {
   const [usuario, setUsuario] = useState('');
   const [senha, setSenha] = useState('');
   const [nivel, setNivel] = useState<AdminNivel>('operacional');
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [usuarios, setUsuarios] = useState<AdminUsuario[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingList, setLoadingList] = useState(true);
   const [mensagem, setMensagem] = useState<{ tipo: 'sucesso' | 'erro'; texto: string } | null>(
     null
   );
+
+  const isEditing = editingId !== null;
 
   async function carregarUsuarios() {
     if (!token) return;
@@ -38,28 +46,61 @@ export default function AdminUsuarios() {
     carregarUsuarios();
   }, [token]);
 
+  function resetForm() {
+    setEditingId(null);
+    setUsuario('');
+    setSenha('');
+    setNivel('operacional');
+  }
+
+  function handleEditar(item: AdminUsuario) {
+    setEditingId(item.id);
+    setUsuario(item.usuario);
+    setSenha('');
+    setNivel(item.nivel);
+    setMensagem(null);
+    document.querySelector('.admin-form')?.scrollIntoView({ behavior: 'smooth' });
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!token || !isAdmin) return;
     setMensagem(null);
 
-    if (!/^\d{6}$/.test(senha)) {
+    if (!isEditing && !/^\d{6}$/.test(senha)) {
+      setMensagem({ tipo: 'erro', texto: 'A senha deve ter exatamente 6 dígitos.' });
+      return;
+    }
+
+    if (isEditing && senha && !/^\d{6}$/.test(senha)) {
       setMensagem({ tipo: 'erro', texto: 'A senha deve ter exatamente 6 dígitos.' });
       return;
     }
 
     setLoading(true);
     try {
-      const novo = await adminCriarUsuario(usuario.trim(), senha, nivel, token);
-      setUsuarios((prev) => [...prev, novo]);
-      setMensagem({ tipo: 'sucesso', texto: `Usuário "${novo.usuario}" criado com sucesso.` });
-      setUsuario('');
-      setSenha('');
-      setNivel('operacional');
+      if (isEditing) {
+        const atualizado = await adminAtualizarUsuario(
+          editingId,
+          {
+            usuario: usuario.trim(),
+            nivel,
+            ...(senha ? { senha } : {}),
+          },
+          token
+        );
+        setUsuarios((prev) => prev.map((u) => (u.id === editingId ? atualizado : u)));
+        setMensagem({ tipo: 'sucesso', texto: `Usuário "${atualizado.usuario}" atualizado.` });
+      } else {
+        const novo = await adminCriarUsuario(usuario.trim(), senha, nivel, token);
+        setUsuarios((prev) => [...prev, novo]);
+        setMensagem({ tipo: 'sucesso', texto: `Usuário "${novo.usuario}" criado com sucesso.` });
+      }
+      resetForm();
     } catch (err) {
       setMensagem({
         tipo: 'erro',
-        texto: err instanceof Error ? err.message : 'Erro ao criar usuário.',
+        texto: err instanceof Error ? err.message : 'Erro ao salvar usuário.',
       });
     } finally {
       setLoading(false);
@@ -77,6 +118,7 @@ export default function AdminUsuarios() {
     setMensagem(null);
     try {
       await adminExcluirUsuario(id, token);
+      if (editingId === id) resetForm();
       setUsuarios((prev) => prev.filter((u) => u.id !== id));
       setMensagem({ tipo: 'sucesso', texto: `Usuário "${nome}" excluído.` });
     } catch (err) {
@@ -102,7 +144,7 @@ export default function AdminUsuarios() {
       <div className={`admin-grid${isAdmin ? '' : ' admin-grid-single'}`}>
         {isAdmin && (
           <form className="admin-form clube-form" onSubmit={handleSubmit}>
-            <h2>Novo usuário</h2>
+            <h2>{isEditing ? 'Editar usuário' : 'Novo usuário'}</h2>
 
             <div className="form-group">
               <label htmlFor="novo-usuario">Usuário</label>
@@ -117,19 +159,27 @@ export default function AdminUsuarios() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="nova-senha">Senha (6 dígitos)</label>
+              <label htmlFor="nova-senha">
+                {isEditing ? 'Nova senha (opcional)' : 'Senha (6 dígitos)'}
+              </label>
               <input
                 id="nova-senha"
                 type="password"
                 inputMode="numeric"
-                pattern="\d{6}"
+                pattern={isEditing ? undefined : '\\d{6}'}
                 maxLength={6}
                 value={senha}
                 onChange={(e) => handleSenhaChange(e.target.value)}
                 autoComplete="new-password"
-                required
+                required={!isEditing}
               />
-              <span className="file-hint">{senha.length}/6 dígitos</span>
+              <span className="file-hint">
+                {isEditing
+                  ? senha
+                    ? `${senha.length}/6 dígitos`
+                    : 'Deixe em branco para manter a senha atual'
+                  : `${senha.length}/6 dígitos`}
+              </span>
             </div>
 
             <div className="form-group">
@@ -145,9 +195,16 @@ export default function AdminUsuarios() {
               </select>
             </div>
 
-            <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
-              {loading ? 'Criando...' : 'Criar usuário'}
-            </button>
+            <div className="admin-form-actions">
+              <button type="submit" className="btn btn-primary" disabled={loading}>
+                {loading ? 'Salvando...' : isEditing ? 'Salvar alterações' : 'Criar usuário'}
+              </button>
+              {isEditing && (
+                <button type="button" className="btn btn-outline admin-cancel-btn" onClick={resetForm}>
+                  Cancelar
+                </button>
+              )}
+            </div>
           </form>
         )}
 
@@ -163,7 +220,10 @@ export default function AdminUsuarios() {
           ) : (
             <ul className="admin-usuarios-list">
               {usuarios.map((item) => (
-                <li key={item.id} className="admin-usuario-item">
+                <li
+                  key={item.id}
+                  className={`admin-usuario-item${editingId === item.id ? ' admin-usuario-item-active' : ''}`}
+                >
                   <div className="admin-usuario-info">
                     <strong>{item.usuario}</strong>
                     <span className={`admin-nivel-badge admin-nivel-badge--${item.nivel}`}>
@@ -172,17 +232,28 @@ export default function AdminUsuarios() {
                     <span>{new Date(item.criado_em).toLocaleDateString('pt-BR')}</span>
                   </div>
                   {isAdmin && (
-                    <button
-                      type="button"
-                      className="btn btn-danger btn-sm"
-                      onClick={() => handleExcluir(item.id, item.usuario)}
-                      disabled={usuarios.length <= 1}
-                      title={
-                        usuarios.length <= 1 ? 'Não é possível excluir o último usuário' : undefined
-                      }
-                    >
-                      Excluir
-                    </button>
+                    <div className="admin-oferta-actions">
+                      <button
+                        type="button"
+                        className="btn btn-edit btn-sm"
+                        onClick={() => handleEditar(item)}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-danger btn-sm"
+                        onClick={() => handleExcluir(item.id, item.usuario)}
+                        disabled={usuarios.length <= 1}
+                        title={
+                          usuarios.length <= 1
+                            ? 'Não é possível excluir o último usuário'
+                            : undefined
+                        }
+                      >
+                        Excluir
+                      </button>
+                    </div>
                   )}
                 </li>
               ))}

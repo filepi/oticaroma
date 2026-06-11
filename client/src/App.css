@@ -1108,6 +1108,12 @@ a {
   background: var(--color-bg);
   border-radius: var(--radius);
   font-size: 0.9rem;
+  border: 1px solid transparent;
+}
+
+.admin-usuario-item-active {
+  border-color: var(--color-secondary);
+  background: rgba(201, 162, 39, 0.08);
 }
 
 .admin-usuario-info {

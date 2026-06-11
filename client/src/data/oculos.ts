@@ -33,7 +33,7 @@ export const oculos: Oculos[] = [
   },
   {
     id: 3,
-    nome: 'The Outdoorsman',
+    nome: 'The Outdoorsman1',
     marca: 'Dolce & Gabbana',
     preco: 3090.0,
     preco_original: 3200,

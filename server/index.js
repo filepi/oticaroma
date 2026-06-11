@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 import { addMembro } from './data/membros.js';
 import { getAllOculos, getOculosById, addOculos, deleteOculos, updateOculos } from './data/oculos.js';
-import { findUsuario, getAllUsuarios, addUsuario, deleteUsuario } from './data/usuarios.js';
+import { findUsuario, getAllUsuarios, addUsuario, deleteUsuario, updateUsuario } from './data/usuarios.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -154,7 +154,38 @@ app.post('/api/admin/usuarios', requireAuth, requireAdmin, (req, res) => {
   }
 });
 
-app.delete('/api/admin/usuarios/:id', requireAuth, (req, res) => {
+app.put('/api/admin/usuarios/:id', requireAuth, requireAdmin, (req, res) => {
+  try {
+    const { usuario, senha, nivel } = req.body;
+
+    if (!usuario?.trim()) {
+      return res.status(400).json({ error: 'Usuário é obrigatório.' });
+    }
+    if (senha !== undefined && senha !== '' && !/^\d{6}$/.test(senha)) {
+      return res.status(400).json({ error: 'A senha deve ter exatamente 6 dígitos.' });
+    }
+
+    const nivelValido = nivel === 'admin' ? 'admin' : 'operacional';
+    const atualizado = updateUsuario(Number(req.params.id), {
+      usuario: usuario.trim(),
+      senha: senha || undefined,
+      nivel: nivelValido,
+    });
+
+    if (!atualizado) {
+      return res.status(404).json({ error: 'Usuário não encontrado.' });
+    }
+
+    res.json(atualizado);
+  } catch (err) {
+    if (err.code === 'DUPLICATE_USER' || err.code === 'LAST_ADMIN') {
+      return res.status(400).json({ error: err.message });
+    }
+    res.status(500).json({ error: 'Erro ao atualizar usuário.' });
+  }
+});
+
+app.delete('/api/admin/usuarios/:id', requireAuth, requireAdmin, (req, res) => {
   try {
     const removed = deleteUsuario(Number(req.params.id));
     if (!removed) {

@@ -95,6 +95,21 @@ export async function adminCriarUsuario(
   });
 }
 
+export async function adminAtualizarUsuario(
+  id: number,
+  data: { usuario: string; senha?: string; nivel: AdminNivel },
+  token: string
+): Promise<AdminUsuario> {
+  return apiFetch(`/api/admin/usuarios/${id}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+}
+
 export async function adminExcluirUsuario(id: number, token: string): Promise<void> {
   await apiFetch(`/api/admin/usuarios/${id}`, {
     method: 'DELETE',

@@ -89,3 +89,40 @@ export function deleteUsuario(id) {
   const { senha: _senha, ...publico } = removed;
   return normalizeUsuario(publico);
 }
+
+export function updateUsuario(id, { usuario, senha, nivel }) {
+  const usuarios = loadUsuarios();
+  const index = usuarios.findIndex((u) => u.id === id);
+  if (index === -1) return null;
+
+  if (usuarios.some((u) => u.usuario === usuario && u.id !== id)) {
+    const err = new Error('Usuário já cadastrado.');
+    err.code = 'DUPLICATE_USER';
+    throw err;
+  }
+
+  const nivelValido = nivel === 'admin' ? 'admin' : 'operacional';
+  const current = usuarios[index];
+
+  if (current.nivel === 'admin' && nivelValido === 'operacional') {
+    const adminCount = usuarios.filter((u) => u.nivel === 'admin').length;
+    if (adminCount <= 1) {
+      const err = new Error('Não é possível remover o último administrador.');
+      err.code = 'LAST_ADMIN';
+      throw err;
+    }
+  }
+
+  const updated = normalizeUsuario({
+    ...current,
+    usuario,
+    nivel: nivelValido,
+    ...(senha ? { senha } : {}),
+  });
+
+  usuarios[index] = updated;
+  saveUsuarios(usuarios);
+
+  const { senha: _senha, ...publico } = updated;
+  return publico;
+}
