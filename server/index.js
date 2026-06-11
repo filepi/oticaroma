@@ -6,13 +6,12 @@ import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 import { addMembro } from './data/membros.js';
 import { getAllOculos, getOculosById, addOculos, deleteOculos, updateOculos } from './data/oculos.js';
+import { findUsuario, getAllUsuarios, addUsuario, deleteUsuario } from './data/usuarios.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-const ADMIN_USER = 'admthais';
-const ADMIN_PASS = '817510';
 const sessions = new Set();
 
 app.use(cors());
@@ -106,12 +105,53 @@ app.get('/api/oculos/:id', (req, res) => {
 
 app.post('/api/admin/login', (req, res) => {
   const { usuario, senha } = req.body;
-  if (usuario !== ADMIN_USER || senha !== ADMIN_PASS) {
+  const user = findUsuario(usuario, senha);
+  if (!user) {
     return res.status(401).json({ error: 'Usuário ou senha incorretos.' });
   }
   const token = uuidv4();
   sessions.add(token);
   res.json({ token });
+});
+
+app.get('/api/admin/usuarios', requireAuth, (_req, res) => {
+  res.json(getAllUsuarios());
+});
+
+app.post('/api/admin/usuarios', requireAuth, (req, res) => {
+  try {
+    const { usuario, senha } = req.body;
+
+    if (!usuario?.trim()) {
+      return res.status(400).json({ error: 'Usuário é obrigatório.' });
+    }
+    if (!/^\d{6}$/.test(senha)) {
+      return res.status(400).json({ error: 'A senha deve ter exatamente 6 dígitos.' });
+    }
+
+    const novo = addUsuario({ usuario: usuario.trim(), senha });
+    res.status(201).json(novo);
+  } catch (err) {
+    if (err.code === 'DUPLICATE_USER') {
+      return res.status(409).json({ error: err.message });
+    }
+    res.status(500).json({ error: 'Erro ao cadastrar usuário.' });
+  }
+});
+
+app.delete('/api/admin/usuarios/:id', requireAuth, (req, res) => {
+  try {
+    const removed = deleteUsuario(Number(req.params.id));
+    if (!removed) {
+      return res.status(404).json({ error: 'Usuário não encontrado.' });
+    }
+    res.json({ message: 'Usuário removido com sucesso.', usuario: removed.usuario });
+  } catch (err) {
+    if (err.code === 'LAST_USER') {
+      return res.status(400).json({ error: err.message });
+    }
+    res.status(500).json({ error: 'Erro ao excluir usuário.' });
+  }
 });
 
 app.post('/api/admin/logout', requireAuth, (req, res) => {

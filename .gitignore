@@ -6,4 +6,5 @@ uploads/*
 !server/uploads/oculos/*
 server/data/membros-clube.json
 server/data/oculos.json
+server/data/usuarios.json
 .env

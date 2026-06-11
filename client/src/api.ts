@@ -1,4 +1,4 @@
-import type { Oculos } from './types';
+import type { Oculos, AdminUsuario } from './types';
 import { oculos as oculosEstaticos } from './data/oculos';
 
 const API_BASE = import.meta.env.VITE_API_URL ?? '';
@@ -65,6 +65,34 @@ export async function adminAtualizarOculos(
 
 export async function adminExcluirOculos(id: number, token: string): Promise<void> {
   await apiFetch(`/api/admin/oculos/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function adminListarUsuarios(token: string): Promise<AdminUsuario[]> {
+  return apiFetch('/api/admin/usuarios', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function adminCriarUsuario(
+  usuario: string,
+  senha: string,
+  token: string
+): Promise<AdminUsuario> {
+  return apiFetch('/api/admin/usuarios', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ usuario, senha }),
+  });
+}
+
+export async function adminExcluirUsuario(id: number, token: string): Promise<void> {
+  await apiFetch(`/api/admin/usuarios/${id}`, {
     method: 'DELETE',
     headers: { Authorization: `Bearer ${token}` },
   });

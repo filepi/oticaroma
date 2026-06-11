@@ -1,7 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
 import logo from '../assets/image.png';
 
-const navItems = [
+type NavHashItem = { label: string; href: string };
+type NavRouteItem = { label: string; to: string };
+type NavItem = NavHashItem | NavRouteItem;
+
+const navItems: NavItem[] = [
   { label: 'Início', href: '#inicio' },
   { label: 'Nossas Ofertas', href: '#ofertas' },
   { label: 'Clube de Benefícios', href: '#clube' },

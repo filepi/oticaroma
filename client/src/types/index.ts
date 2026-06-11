@@ -18,3 +18,9 @@ export interface ClubeFormData {
   data_nascimento: string;
   cupom_fiscal: File;
 }
+
+export interface AdminUsuario {
+  id: number;
+  usuario: string;
+  criado_em: string;
+}

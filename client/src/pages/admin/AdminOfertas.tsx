@@ -10,6 +10,7 @@ import {
 } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import type { Oculos } from '../../types';
+import AdminUsuariosModal from '../../components/admin/AdminUsuariosModal';
 
 const emptyForm = {
   nome: '',
@@ -50,6 +51,7 @@ export default function AdminOfertas() {
   const [mensagem, setMensagem] = useState<{ tipo: 'sucesso' | 'erro'; texto: string } | null>(
     null
   );
+  const [usuariosModalOpen, setUsuariosModalOpen] = useState(false);
 
   const isEditing = editingId !== null;
 
@@ -171,10 +173,27 @@ export default function AdminOfertas() {
             <h1>Gerenciar Ofertas</h1>
             <p className="admin-subtitle">Cadastre e edite os óculos exibidos no site.</p>
           </div>
-          <button type="button" className="btn btn-outline admin-logout-btn" onClick={handleLogout}>
-            Sair
-          </button>
+          <div className="admin-header-actions">
+            <button
+              type="button"
+              className="btn btn-outline admin-logout-btn"
+              onClick={() => setUsuariosModalOpen(true)}
+            >
+              Usuários
+            </button>
+            <button type="button" className="btn btn-outline admin-logout-btn" onClick={handleLogout}>
+              Sair
+            </button>
+          </div>
         </header>
+
+        {token && (
+          <AdminUsuariosModal
+            open={usuariosModalOpen}
+            token={token}
+            onClose={() => setUsuariosModalOpen(false)}
+          />
+        )}
 
         {mensagem && (
           <div className={`alert alert-${mensagem.tipo === 'sucesso' ? 'sucesso' : 'erro'}`}>
