@@ -5,17 +5,20 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import OculosDetail from './pages/OculosDetail';
 import AdminLogin from './pages/admin/AdminLogin';
-import AdminOfertas from './pages/admin/AdminOfertas';
+import AdminHome from './pages/admin/AdminHome';
+import AdminProdutos from './pages/admin/AdminProdutos';
+import AdminUsuarios from './pages/admin/AdminUsuarios';
 import { AuthProvider } from './context/AuthContext';
 import './App.css';
 
 function AppRoutes() {
   const location = useLocation();
-  const isAdminDashboard = location.pathname === '/admin';
+  const isAdminArea =
+    location.pathname.startsWith('/admin') && location.pathname !== '/admin/login';
 
   return (
     <>
-      {!isAdminDashboard && <Header />}
+      {!isAdminArea && <Header />}
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -25,13 +28,29 @@ function AppRoutes() {
             path="/admin"
             element={
               <ProtectedRoute>
-                <AdminOfertas />
+                <AdminHome />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/produtos"
+            element={
+              <ProtectedRoute>
+                <AdminProdutos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/usuarios"
+            element={
+              <ProtectedRoute>
+                <AdminUsuarios />
               </ProtectedRoute>
             }
           />
         </Routes>
       </main>
-      {!isAdminDashboard && <Footer />}
+      {!isAdminArea && <Footer />}
     </>
   );
 }

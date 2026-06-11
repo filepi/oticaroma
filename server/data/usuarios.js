@@ -10,15 +10,26 @@ const SEED = [
     id: 1,
     usuario: 'admthais',
     senha: '817510',
+    nivel: 'admin',
     criado_em: new Date().toISOString(),
   },
 ];
+
+function normalizeUsuario(usuario) {
+  return {
+    ...usuario,
+    nivel: usuario.nivel === 'admin' ? 'admin' : 'operacional',
+  };
+}
 
 function loadUsuarios() {
   if (!fs.existsSync(FILE)) {
     fs.writeFileSync(FILE, JSON.stringify(SEED, null, 2));
   }
-  return JSON.parse(fs.readFileSync(FILE, 'utf8'));
+  const usuarios = JSON.parse(fs.readFileSync(FILE, 'utf8'));
+  return usuarios.map((u) =>
+    normalizeUsuario(u.usuario === 'admthais' && !u.nivel ? { ...u, nivel: 'admin' } : u)
+  );
 }
 
 function saveUsuarios(usuarios) {
@@ -26,14 +37,17 @@ function saveUsuarios(usuarios) {
 }
 
 export function findUsuario(usuario, senha) {
-  return loadUsuarios().find((u) => u.usuario === usuario && u.senha === senha) ?? null;
+  const user = loadUsuarios().find((u) => u.usuario === usuario && u.senha === senha);
+  if (!user) return null;
+  const { senha: _senha, ...publico } = user;
+  return normalizeUsuario(publico);
 }
 
 export function getAllUsuarios() {
-  return loadUsuarios().map(({ senha: _senha, ...rest }) => rest);
+  return loadUsuarios().map(({ senha: _senha, ...rest }) => normalizeUsuario(rest));
 }
 
-export function addUsuario({ usuario, senha }) {
+export function addUsuario({ usuario, senha, nivel = 'operacional' }) {
   const usuarios = loadUsuarios();
 
   if (usuarios.some((u) => u.usuario === usuario)) {
@@ -42,12 +56,13 @@ export function addUsuario({ usuario, senha }) {
     throw err;
   }
 
-  const novo = {
+  const novo = normalizeUsuario({
     id: usuarios.length > 0 ? Math.max(...usuarios.map((u) => u.id)) + 1 : 1,
     usuario,
     senha,
+    nivel,
     criado_em: new Date().toISOString(),
-  };
+  });
 
   usuarios.push(novo);
   saveUsuarios(usuarios);
@@ -72,5 +87,5 @@ export function deleteUsuario(id) {
   saveUsuarios(usuarios);
 
   const { senha: _senha, ...publico } = removed;
-  return publico;
+  return normalizeUsuario(publico);
 }

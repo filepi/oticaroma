@@ -17,8 +17,8 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      const { token } = await adminLogin(usuario, senha);
-      login(token);
+      const { token, nivel, usuario: nomeUsuario } = await adminLogin(usuario, senha);
+      login(token, nivel, nomeUsuario);
       navigate('/admin');
     } catch (err) {
       setErro(err instanceof Error ? err.message : 'Erro ao fazer login.');

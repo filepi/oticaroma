@@ -12,7 +12,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-const sessions = new Set();
+const sessions = new Map();
 
 app.use(cors());
 app.use(express.json());
@@ -79,14 +79,24 @@ function validarCPF(cpf) {
   return rest === parseInt(digits[10]);
 }
 
-function requireAuth(req, res, next) {
+function getSession(req) {
   const auth = req.headers.authorization;
-  if (!auth?.startsWith('Bearer ')) {
+  if (!auth?.startsWith('Bearer ')) return null;
+  return sessions.get(auth.slice(7)) ?? null;
+}
+
+function requireAuth(req, res, next) {
+  const session = getSession(req);
+  if (!session) {
     return res.status(401).json({ error: 'Não autorizado.' });
   }
-  const token = auth.slice(7);
-  if (!sessions.has(token)) {
-    return res.status(401).json({ error: 'Sessão inválida ou expirada.' });
+  req.session = session;
+  next();
+}
+
+function requireAdmin(req, res, next) {
+  if (req.session?.nivel !== 'admin') {
+    return res.status(403).json({ error: 'Acesso restrito a administradores.' });
   }
   next();
 }
@@ -110,17 +120,21 @@ app.post('/api/admin/login', (req, res) => {
     return res.status(401).json({ error: 'Usuário ou senha incorretos.' });
   }
   const token = uuidv4();
-  sessions.add(token);
-  res.json({ token });
+  sessions.set(token, {
+    userId: user.id,
+    usuario: user.usuario,
+    nivel: user.nivel,
+  });
+  res.json({ token, nivel: user.nivel, usuario: user.usuario });
 });
 
 app.get('/api/admin/usuarios', requireAuth, (_req, res) => {
   res.json(getAllUsuarios());
 });
 
-app.post('/api/admin/usuarios', requireAuth, (req, res) => {
+app.post('/api/admin/usuarios', requireAuth, requireAdmin, (req, res) => {
   try {
-    const { usuario, senha } = req.body;
+    const { usuario, senha, nivel } = req.body;
 
     if (!usuario?.trim()) {
       return res.status(400).json({ error: 'Usuário é obrigatório.' });
@@ -129,7 +143,8 @@ app.post('/api/admin/usuarios', requireAuth, (req, res) => {
       return res.status(400).json({ error: 'A senha deve ter exatamente 6 dígitos.' });
     }
 
-    const novo = addUsuario({ usuario: usuario.trim(), senha });
+    const nivelValido = nivel === 'admin' ? 'admin' : 'operacional';
+    const novo = addUsuario({ usuario: usuario.trim(), senha, nivel: nivelValido });
     res.status(201).json(novo);
   } catch (err) {
     if (err.code === 'DUPLICATE_USER') {

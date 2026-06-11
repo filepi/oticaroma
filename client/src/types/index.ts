@@ -19,8 +19,11 @@ export interface ClubeFormData {
   cupom_fiscal: File;
 }
 
+export type AdminNivel = 'admin' | 'operacional';
+
 export interface AdminUsuario {
   id: number;
   usuario: string;
+  nivel: AdminNivel;
   criado_em: string;
 }

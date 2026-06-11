@@ -1,4 +1,4 @@
-import type { Oculos, AdminUsuario } from './types';
+import type { Oculos, AdminUsuario, AdminNivel } from './types';
 import { oculos as oculosEstaticos } from './data/oculos';
 
 const API_BASE = import.meta.env.VITE_API_URL ?? '';
@@ -28,7 +28,10 @@ export async function fetchOculosById(id: string): Promise<Oculos> {
   }
 }
 
-export async function adminLogin(usuario: string, senha: string): Promise<{ token: string }> {
+export async function adminLogin(
+  usuario: string,
+  senha: string
+): Promise<{ token: string; nivel: AdminNivel; usuario: string }> {
   return apiFetch('/api/admin/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -79,6 +82,7 @@ export async function adminListarUsuarios(token: string): Promise<AdminUsuario[]
 export async function adminCriarUsuario(
   usuario: string,
   senha: string,
+  nivel: AdminNivel,
   token: string
 ): Promise<AdminUsuario> {
   return apiFetch('/api/admin/usuarios', {
@@ -87,7 +91,7 @@ export async function adminCriarUsuario(
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ usuario, senha }),
+    body: JSON.stringify({ usuario, senha, nivel }),
   });
 }
 
