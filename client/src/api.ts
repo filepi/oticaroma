@@ -1,16 +1,73 @@
 import type { Oculos } from './types';
-import { oculos } from './data/oculos';
+import { oculos as oculosEstaticos } from './data/oculos';
 
 const API_BASE = import.meta.env.VITE_API_URL ?? '';
 
+async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, options);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Erro na requisição');
+  return data;
+}
+
 export async function fetchOculos(): Promise<Oculos[]> {
-  return oculos;
+  try {
+    return await apiFetch<Oculos[]>('/api/oculos');
+  } catch {
+    return oculosEstaticos;
+  }
 }
 
 export async function fetchOculosById(id: string): Promise<Oculos> {
-  const item = oculos.find((o) => o.id === Number(id));
-  if (!item) throw new Error('Óculos não encontrado');
-  return item;
+  try {
+    return await apiFetch<Oculos>(`/api/oculos/${id}`);
+  } catch {
+    const item = oculosEstaticos.find((o) => o.id === Number(id));
+    if (!item) throw new Error('Óculos não encontrado');
+    return item;
+  }
+}
+
+export async function adminLogin(usuario: string, senha: string): Promise<{ token: string }> {
+  return apiFetch('/api/admin/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ usuario, senha }),
+  });
+}
+
+export async function adminLogout(token: string): Promise<void> {
+  await apiFetch('/api/admin/logout', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function adminCadastrarOculos(formData: FormData, token: string): Promise<Oculos> {
+  return apiFetch('/api/admin/oculos', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+}
+
+export async function adminAtualizarOculos(
+  id: number,
+  formData: FormData,
+  token: string
+): Promise<Oculos> {
+  return apiFetch(`/api/admin/oculos/${id}`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+}
+
+export async function adminExcluirOculos(id: number, token: string): Promise<void> {
+  await apiFetch(`/api/admin/oculos/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
 }
 
 export async function cadastrarClube(formData: FormData): Promise<{ message: string }> {

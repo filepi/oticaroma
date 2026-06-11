@@ -6,6 +6,7 @@ const navItems = [
   { label: 'Nossas Ofertas', href: '#ofertas' },
   { label: 'Clube de Benefícios', href: '#clube' },
   { label: 'Fale Conosco', href: '#contato' },
+  { label: 'Admin', to: '/admin/login' },
 ];
 
 export default function Header() {
@@ -27,7 +28,15 @@ export default function Header() {
 
         <nav className="nav">
           {navItems.map((item) =>
-            isHome ? (
+            'to' in item ? (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={`nav-link${location.pathname.startsWith(item.to) ? ' nav-link-active' : ''}`}
+              >
+                {item.label}
+              </Link>
+            ) : isHome ? (
               <a
                 key={item.href}
                 href={item.href}

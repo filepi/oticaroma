@@ -1,6 +1,9 @@
 node_modules/
 dist/
 uploads/*
-server/data/membros-clube.json
 !uploads/.gitkeep
+!server/uploads/oculos/
+!server/uploads/oculos/*
+server/data/membros-clube.json
+server/data/oculos.json
 .env

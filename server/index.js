@@ -5,10 +5,15 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
 import { addMembro } from './data/membros.js';
+import { getAllOculos, getOculosById, addOculos, deleteOculos, updateOculos } from './data/oculos.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+const ADMIN_USER = 'admthais';
+const ADMIN_PASS = '817510';
+const sessions = new Set();
 
 app.use(cors());
 app.use(express.json());
@@ -16,6 +21,14 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const storage = multer.diskStorage({
   destination: path.join(__dirname, 'uploads'),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${uuidv4()}${ext}`);
+  },
+});
+
+const oculosStorage = multer.diskStorage({
+  destination: path.join(__dirname, 'uploads', 'oculos'),
   filename: (_req, file, cb) => {
     const ext = path.extname(file.originalname);
     cb(null, `${uuidv4()}${ext}`);
@@ -36,6 +49,20 @@ const upload = multer({
   },
 });
 
+const oculosUpload = multer({
+  storage: oculosStorage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const allowed = ['.jpg', '.jpeg', '.png', '.webp'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowed.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Formato de imagem não permitido. Use JPG, PNG ou WEBP.'));
+    }
+  },
+});
+
 function validarCPF(cpf) {
   const digits = cpf.replace(/\D/g, '');
   if (digits.length !== 11 || /^(\d)\1+$/.test(digits)) return false;
@@ -52,6 +79,139 @@ function validarCPF(cpf) {
   if (rest === 10) rest = 0;
   return rest === parseInt(digits[10]);
 }
+
+function requireAuth(req, res, next) {
+  const auth = req.headers.authorization;
+  if (!auth?.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Não autorizado.' });
+  }
+  const token = auth.slice(7);
+  if (!sessions.has(token)) {
+    return res.status(401).json({ error: 'Sessão inválida ou expirada.' });
+  }
+  next();
+}
+
+app.get('/api/oculos', (_req, res) => {
+  res.json(getAllOculos());
+});
+
+app.get('/api/oculos/:id', (req, res) => {
+  const item = getOculosById(Number(req.params.id));
+  if (!item) {
+    return res.status(404).json({ error: 'Óculos não encontrado.' });
+  }
+  res.json(item);
+});
+
+app.post('/api/admin/login', (req, res) => {
+  const { usuario, senha } = req.body;
+  if (usuario !== ADMIN_USER || senha !== ADMIN_PASS) {
+    return res.status(401).json({ error: 'Usuário ou senha incorretos.' });
+  }
+  const token = uuidv4();
+  sessions.add(token);
+  res.json({ token });
+});
+
+app.post('/api/admin/logout', requireAuth, (req, res) => {
+  const token = req.headers.authorization.slice(7);
+  sessions.delete(token);
+  res.json({ message: 'Logout realizado.' });
+});
+
+function parseOculosBody(body, { requireImage, hasImage }) {
+  const { nome, marca, preco, preco_original, descricao, descricao_detalhada, cor, material, tipo } =
+    body;
+
+  if (!nome?.trim()) {
+    return { error: 'Nome é obrigatório.' };
+  }
+  if (!marca?.trim()) {
+    return { error: 'Marca é obrigatória.' };
+  }
+  if (!preco || Number.isNaN(Number(preco))) {
+    return { error: 'Preço inválido.' };
+  }
+  if (!descricao?.trim()) {
+    return { error: 'Descrição curta é obrigatória.' };
+  }
+  if (!descricao_detalhada?.trim()) {
+    return { error: 'Descrição detalhada é obrigatória.' };
+  }
+  if (requireImage && !hasImage) {
+    return { error: 'Imagem é obrigatória.' };
+  }
+  if (!cor?.trim() || !material?.trim() || !tipo?.trim()) {
+    return { error: 'Cor, material e tipo são obrigatórios.' };
+  }
+
+  const precoOriginal =
+    preco_original && !Number.isNaN(Number(preco_original)) ? Number(preco_original) : null;
+
+  return {
+    data: {
+      nome: nome.trim(),
+      marca: marca.trim(),
+      preco: Number(preco),
+      preco_original: precoOriginal,
+      descricao: descricao.trim(),
+      descricao_detalhada: descricao_detalhada.trim(),
+      cor: cor.trim(),
+      material: material.trim(),
+      tipo: tipo.trim(),
+    },
+  };
+}
+
+app.post('/api/admin/oculos', requireAuth, oculosUpload.single('imagem'), (req, res) => {
+  try {
+    const parsed = parseOculosBody(req.body, { requireImage: true, hasImage: !!req.file });
+    if (parsed.error) {
+      return res.status(400).json({ error: parsed.error });
+    }
+
+    const item = addOculos({
+      ...parsed.data,
+      imagem: `/uploads/oculos/${req.file.filename}`,
+    });
+
+    res.status(201).json(item);
+  } catch {
+    res.status(500).json({ error: 'Erro ao cadastrar oferta.' });
+  }
+});
+
+app.put('/api/admin/oculos/:id', requireAuth, oculosUpload.single('imagem'), (req, res) => {
+  try {
+    const existing = getOculosById(Number(req.params.id));
+    if (!existing) {
+      return res.status(404).json({ error: 'Oferta não encontrada.' });
+    }
+
+    const parsed = parseOculosBody(req.body, { requireImage: false, hasImage: !!req.file });
+    if (parsed.error) {
+      return res.status(400).json({ error: parsed.error });
+    }
+
+    const item = updateOculos(Number(req.params.id), {
+      ...parsed.data,
+      imagem: req.file ? `/uploads/oculos/${req.file.filename}` : existing.imagem,
+    });
+
+    res.json(item);
+  } catch {
+    res.status(500).json({ error: 'Erro ao atualizar oferta.' });
+  }
+});
+
+app.delete('/api/admin/oculos/:id', requireAuth, (req, res) => {
+  const removed = deleteOculos(Number(req.params.id));
+  if (!removed) {
+    return res.status(404).json({ error: 'Oferta não encontrada.' });
+  }
+  res.json({ message: 'Oferta removida com sucesso.' });
+});
 
 app.post('/api/clube', upload.single('cupom_fiscal'), (req, res) => {
   try {
